@@ -1,103 +1,126 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { createItem, getItems } from "./services/api";
+
+interface TodoItem {
+  id: number;
+  name: string;          // 할 일 내용
+  isCompleted: boolean;  // 완료 여부
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const tenantId = "sanghun";
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [newTodo, setNewTodo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    setLoading(true);
+    getItems(tenantId)
+      .then((data) => {
+        setTodos(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("할 일 목록 불러오기 실패");
+        setLoading(false);
+      });
+  }, [tenantId]);
+
+  // 새로운 할 일 추가
+  const addTodo = async () => {
+    if (!newTodo.trim()) return;
+    try {
+      const newItem = await createItem(tenantId, newTodo);
+      setTodos((prev) => [...prev, newItem]);
+      setNewTodo("");
+    } catch (error) {
+      console.error(error);
+      setError("할 일 추가 실패");
+    }
+  };
+
+  // 완료 상태 토글
+  const toggleTodo = (id: number) => {
+    setTodos((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, isCompleted: !item.isCompleted } : item
+      )
+    );
+  };
+
+  // 할 일 삭제
+  const deleteTodo = (id: number) => {
+    setTodos((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  if (loading) return <div>로딩중...</div>;
+  if (error) return <div>{error}</div>;
+
+  // 완료 여부에 따라 할 일 리스트를 분리합니다.
+  const pendingTodos = todos.filter((todo) => !todo.isCompleted);
+  const completedTodos = todos.filter((todo) => todo.isCompleted);
+
+  return (
+    <div className="container mx-auto p-4">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold mb-4">할 일 목록</h1>
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            className="border border-gray-300 rounded-md p-2 flex-grow"
+            placeholder="새로운 할 일을 입력하세요"
+          />
+          <button onClick={addTodo} className="bg-blue-500 text-white px-4 py-2 rounded-md">
+            추가
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className="flex space-x-4">
+        {/* 좌측: 진행 중인 할 일 */}
+        <div className="w-1/2">
+          <h2 className="text-xl font-semibold mb-2">진행 중</h2>
+          <ul className="space-y-2">
+            {pendingTodos.map((todo) => (
+              <li key={todo.id} className="flex items-center justify-between p-2 border border-gray-200 rounded">
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => toggleTodo(todo.id)}>
+                    {todo.isCompleted ? "✅" : "⭕️"}
+                  </button>
+                  <span>{todo.name}</span>
+                </div>
+                <button onClick={() => deleteTodo(todo.id)} className="text-red-500">
+                  삭제
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* 우측: 완료된 할 일 */}
+        <div className="w-1/2">
+          <h2 className="text-xl font-semibold mb-2">완료됨</h2>
+          <ul className="space-y-2">
+            {completedTodos.map((todo) => (
+              <li key={todo.id} className="flex items-center justify-between p-2 border border-gray-200 rounded">
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => toggleTodo(todo.id)}>
+                    {todo.isCompleted ? "✅" : "⭕️"}
+                  </button>
+                  <span className="">{todo.name}</span>
+                </div>
+                <button onClick={() => deleteTodo(todo.id)} className="text-red-500">
+                  삭제
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
