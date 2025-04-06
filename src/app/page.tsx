@@ -15,7 +15,7 @@ export default function Home() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -24,8 +24,8 @@ export default function Home() {
         setTodos(data);
         setLoading(false);
       })
-      .catch((err) => {
-        setError("할 일 목록 불러오기 실패");
+      .catch((_error: unknown) => {
+        setError(_error instanceof Error ? _error.message : "할 일 목록 불러오기 실패");
         setLoading(false);
       });
   }, [tenantId]);
@@ -37,9 +37,9 @@ export default function Home() {
       const newItem = await createItem(tenantId, newTodo);
       setTodos((prev) => [...prev, newItem]);
       setNewTodo("");
-    } catch (error) {
-      console.error(error);
-      setError("할 일 추가 실패");
+    } catch (_error: unknown) {
+      console.error(_error);
+      setError(_error instanceof Error ? _error.message : "할 일 추가 실패");
     }
   };
 
@@ -55,15 +55,15 @@ export default function Home() {
       if (!todo) return;
       const newStatus = !todo.isCompleted;
       await updateItem(tenantId, id, { name: todo.name, isCompleted: newStatus });
-    } catch (error) {
-      console.error(error);
+    } catch (_error: unknown) {
+      console.error(_error);
       // 오류 발생 시 완료 상태 변경 취소
       setTodos((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, isCompleted: !item.isCompleted } : item
         )
       );
-      setError("완료 상태 변경 실패");
+      setError(_error instanceof Error ? _error.message : "완료 상태 변경 실패");
     }
   };
 

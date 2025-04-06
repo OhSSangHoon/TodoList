@@ -69,8 +69,8 @@ export default function DetailPage() {
         setMemo(data.memo || ""); // 메모가 없는 경우 빈 문자열로 초기화
         setIsCompleted(data.isCompleted);
         setImagePreview(data.imageUrl || ""); // 이미지 URL이 없는 경우 빈 문자열로 초기화
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "상세 정보를 불러오지 못했습니다.");
+      } catch (_error: unknown) {
+        setError(_error instanceof Error ? _error.message : "상세 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -119,8 +119,8 @@ export default function DetailPage() {
       await updateItem(tenantId, Number(id), updatePayload);
       // 수정 완료 후 목록 페이지로 이동
       router.push("/");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "업데이트에 실패했습니다.");
+    } catch (_error: unknown) {
+      setError(_error instanceof Error ? _error.message : "업데이트에 실패했습니다.");
     } finally {
       setLoading(false);
     }
