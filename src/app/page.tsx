@@ -75,7 +75,7 @@ export default function Home() {
   const completedTodos = todos.filter((todo) => todo.isCompleted);
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-[375px] sm:max-w-[744px] lg:max-w-[75rem] p-4 bg-white">
+    <div className="mx-auto mt-10 w-full max-w-[375px] sm:max-w-[744px] lg:max-w-[75rem] p-4">
       {/* 입력 영역 */}
       <div className="mb-4">
         <div className="flex flex-nowrap md:flex-row items-stretch gap-4">
