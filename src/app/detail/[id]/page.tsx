@@ -69,8 +69,8 @@ export default function DetailPage() {
         setMemo(data.memo || ""); // 메모가 없는 경우 빈 문자열로 초기화
         setIsCompleted(data.isCompleted);
         setImagePreview(data.imageUrl || ""); // 이미지 URL이 없는 경우 빈 문자열로 초기화
-      } catch (err: any) {
-        setError(err.message || "상세 정보를 불러오지 못했습니다.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "상세 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -119,8 +119,8 @@ export default function DetailPage() {
       await updateItem(tenantId, Number(id), updatePayload);
       // 수정 완료 후 목록 페이지로 이동
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "업데이트에 실패했습니다.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "업데이트에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -129,12 +129,12 @@ export default function DetailPage() {
   // 항목 삭제
   const handleDelete = async () => {
     try {
-    await deleteItem(tenantId, Number(id));
-    router.push("/");
-    } catch (err: any) {
-    setError(err.message || "삭제에 실패했습니다.");
+        await deleteItem(tenantId, Number(id));
+        router.push("/");
+    } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "삭제에 실패했습니다.");
     } finally {
-    setLoading(false);
+        setLoading(false);
     }
   };
 
